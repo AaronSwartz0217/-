@@ -1,5 +1,6 @@
 // 地区页逻辑：地图行政区（单选）+ 风险标签双维度筛选
 const hitMap = document.getElementById('hitMap');
+const mapSelected = document.getElementById('mapSelected');
 const extraDistrictChips = document.getElementById('extraDistrictChips');
 const tagChips = document.getElementById('tagChips');
 const results = document.getElementById('results');
@@ -44,6 +45,16 @@ function refreshMapStates() {
   hitMap.querySelectorAll('.region-hit').forEach(p => {
     p.classList.toggle('selected', p.getAttribute('data-district') === activeDistrict);
   });
+}
+
+// 地图下方显示当前已选行政区
+function refreshMapSelected() {
+  const onMap = MAP_REGIONS.some(r => r.name === activeDistrict);
+  if (activeDistrict && onMap) {
+    mapSelected.innerHTML = `已选 <span class="name">${esc(activeDistrict)}</span><span class="cnt">共 ${countByDistrict(activeDistrict)} 家</span>`;
+  } else {
+    mapSelected.textContent = '点击地图上的行政区进行筛选';
+  }
 }
 
 // —— 补充地区 chip（外地 / 杭州全域）+ 全部 ——
@@ -97,6 +108,7 @@ function currentList() {
 
 function render() {
   refreshMapStates();
+  refreshMapSelected();
   refreshChipStates();
   const list = currentList();
 

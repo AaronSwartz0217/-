@@ -259,7 +259,7 @@ body.center { justify-content: center; min-height: 100vh; }
   max-width: 620px;
   margin: 0 auto;
   aspect-ratio: 730 / 547;
-  background: #ffffff;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -273,9 +273,8 @@ body.center { justify-content: center; min-height: 100vh; }
   display: block;
 }
 .map-image { object-fit: contain; pointer-events: none; }
-/* 暗色主题下轻微压暗底图，避免刺眼且与深色背景协调 */
-html[data-theme="dark"] .map-wrap { background: #dfe3ea; }
-html[data-theme="dark"] .map-image { filter: brightness(.92); }
+/* 暗色主题下轻微压暗底图，与深色背景协调 */
+html[data-theme="dark"] .map-image { filter: brightness(.9); }
 .hit-map { z-index: 2; }
 .region-hit {
   fill: transparent;
@@ -286,13 +285,20 @@ html[data-theme="dark"] .map-image { filter: brightness(.92); }
   transition: fill .12s;
 }
 .region-hit:hover,
-.region-hit:focus { fill: rgba(26,26,26,.14); }
+.region-hit:focus { fill: rgba(26,26,26,.1); }
 .region-hit.selected,
-.region-hit.selected:hover {
-  fill: rgba(214,69,69,.42);
-  stroke: var(--danger);
+.region-hit.selected:hover { fill: rgba(26,26,26,.14); }
+
+/* 已选行政区提示（显示在地图下方） */
+.map-selected {
+  margin: 12px auto 0;
+  max-width: 620px;
+  font-size: 13px;
+  color: var(--text-soft);
+  text-align: center;
 }
-.extra-district-label { font-size: 12px; color: var(--text-faint); margin: 12px 0 8px; letter-spacing: .04em; }
+.map-selected .name { font-weight: 600; color: var(--text); }
+.map-selected .cnt { color: var(--text-faint); margin-left: 6px; }
 #extraDistrictChips { margin-top: 14px; }
 
 .result-head {
