@@ -277,3 +277,54 @@ body.center { justify-content: center; min-height: 100vh; }
 .company-card .cc-reason { font-size: 14px; line-height: 1.7; color: var(--text-soft); margin-bottom: 12px; }
 .company-card .cc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .empty { font-size: 14px; color: var(--text-faint); padding: 40px 0; text-align: center; }
+
+/* —— 准入协议弹窗（点击任意区域关闭） —— */
+.agreement-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+  cursor: pointer;
+}
+.agreement-overlay.show { display: flex; }
+.agreement-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: 86vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 60px var(--shadow);
+  animation: rise .2s ease;
+  cursor: default;
+}
+.agreement-modal .agr-tip {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--danger);
+  background: var(--danger-soft);
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.agreement-modal h2 { font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+.agreement-modal .agr-body { font-size: 13px; line-height: 1.85; color: var(--text-soft); }
+.agreement-modal .agr-body h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 18px 0 6px;
+}
+.agreement-modal .agr-body p { margin: 0 0 8px; }
+.agreement-modal .agr-hint {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  letter-spacing: .04em;
+}
