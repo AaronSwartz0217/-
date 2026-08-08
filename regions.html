@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>按地区筛选 · 杭州求职避雷网</title>
+<link rel="stylesheet" href="style.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem('theme');
+    var dark = saved ? saved === 'dark'
+      : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+  })();
+</script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="icon-btn" href="index.html" title="返回搜索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+      </svg>
+      返回搜索
+    </a>
+    <button class="icon-btn" id="themeToggle">夜间模式</button>
+  </div>
+
+  <div class="wrap wide">
+    <div class="header">
+      <h1>按地区筛选</h1>
+      <p>选择行政区，或按风险标签查看对应的避雷企业。点击卡片查看完整避雷详情。</p>
+    </div>
+
+    <!-- 地区筛选：后续可替换为地图 PNG 热区，data-district 属性保持一致即可复用逻辑 -->
+    <div class="filter-section">
+      <div class="filter-label">按地区</div>
+      <div class="chips" id="districtChips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">按风险标签</div>
+      <div class="chips" id="tagChips"></div>
+    </div>
+
+    <div class="result-head">
+      <h2 id="resultTitle">全部企业</h2>
+      <span class="count" id="resultCount"></span>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+
+<script src="data.js"></script>
+<script src="common.js"></script>
+<script src="regions.js"></script>
+</body>
+</html>
