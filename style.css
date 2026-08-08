@@ -230,6 +230,8 @@ body.center { justify-content: center; min-height: 100vh; }
 .close-btn:hover { background: var(--bg); }
 
 .footer { margin-top: 48px; font-size: 12px; color: var(--text-faint); line-height: 1.8; }
+.footer p { margin: 0 0 6px; }
+.footer p:last-child { margin-bottom: 0; }
 
 /* —— 地区页 —— */
 .filter-section { margin-bottom: 28px; }
