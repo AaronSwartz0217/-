@@ -31,10 +31,14 @@
       <p>选择行政区，或按风险标签查看对应的避雷企业。点击卡片查看完整避雷详情。</p>
     </div>
 
-    <!-- 地区筛选：后续可替换为地图 PNG 热区，data-district 属性保持一致即可复用逻辑 -->
+    <!-- 地区筛选：点击地图行政区进行筛选（单选），下方补充「外地 / 杭州全域」入口 -->
     <div class="filter-section">
-      <div class="filter-label">按地区</div>
-      <div class="chips" id="districtChips"></div>
+      <div class="filter-label">按地区 · 点击地图选择</div>
+      <div class="map-wrap">
+        <img class="map-image" src="杭州行政区地图底图.png" width="730" height="547" alt="杭州市行政区划地图">
+        <svg class="hit-map" id="hitMap" viewBox="0 0 730 547" role="group" aria-label="杭州行政区选择层"></svg>
+      </div>
+      <div class="chips" id="extraDistrictChips"></div>
     </div>
 
     <div class="filter-section">
@@ -63,6 +67,7 @@
   <div class="agreement-overlay" id="agreementOverlay"></div>
 
 <script src="data.js"></script>
+<script src="mapdata.js"></script>
 <script src="common.js"></script>
 <script src="regions.js"></script>
 </body>

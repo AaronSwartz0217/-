@@ -1,5 +1,6 @@
-// 地区页逻辑：行政区 + 风险标签双维度筛选
-const districtChips = document.getElementById('districtChips');
+// 地区页逻辑：地图行政区（单选）+ 风险标签双维度筛选
+const hitMap = document.getElementById('hitMap');
+const extraDistrictChips = document.getElementById('extraDistrictChips');
 const tagChips = document.getElementById('tagChips');
 const results = document.getElementById('results');
 const resultTitle = document.getElementById('resultTitle');
@@ -9,25 +10,55 @@ const resultCount = document.getElementById('resultCount');
 let activeDistrict = null;
 let activeTag = null;
 
-// 所有出现过的行政区（杭州各区在前，按 HZ_DISTRICTS 顺序，其余附后）
-function allDistricts() {
-  const inData = [...new Set(BLACKLIST.map(c => c.district))];
-  const ordered = HZ_DISTRICTS.map(d => d.key).filter(k => inData.includes(k));
-  const others = inData.filter(d => !ordered.includes(d));
-  return ordered.concat(others);
+// 地图上没有对应热区的行政区（外地 / 杭州全域等），用 chip 补充入口
+function extraDistricts() {
+  const mapNames = new Set(MAP_REGIONS.map(r => r.name));
+  return [...new Set(BLACKLIST.map(c => c.district))].filter(d => !mapNames.has(d));
 }
 
-function buildDistrictChips() {
+// —— 地图热区 ——
+function buildMap() {
   const frag = document.createDocumentFragment();
-  // “全部”选项
-  frag.appendChild(makeChip('全部', BLACKLIST.length, () => { activeDistrict = null; render(); }, () => activeDistrict === null));
-  allDistricts().forEach(d => {
+  MAP_REGIONS.forEach(r => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class', 'region-hit');
+    path.setAttribute('d', r.d);
+    path.setAttribute('data-district', r.name);
+    path.setAttribute('tabindex', '0');
+    path.setAttribute('role', 'button');
+    const cnt = countByDistrict(r.name);
+    path.setAttribute('aria-label', `${r.name}，收录 ${cnt} 家`);
+    const select = () => { activeDistrict = (activeDistrict === r.name ? null : r.name); render(); };
+    path.addEventListener('click', select);
+    path.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(); }
+    });
+    frag.appendChild(path);
+  });
+  hitMap.innerHTML = '';
+  hitMap.appendChild(frag);
+}
+
+// 同步地图热区选中态
+function refreshMapStates() {
+  hitMap.querySelectorAll('.region-hit').forEach(p => {
+    p.classList.toggle('selected', p.getAttribute('data-district') === activeDistrict);
+  });
+}
+
+// —— 补充地区 chip（外地 / 杭州全域）+ 全部 ——
+function buildExtraChips() {
+  const frag = document.createDocumentFragment();
+  frag.appendChild(makeChip('全部', BLACKLIST.length,
+    () => { activeDistrict = null; render(); },
+    () => activeDistrict === null));
+  extraDistricts().forEach(d => {
     frag.appendChild(makeChip(d, countByDistrict(d),
       () => { activeDistrict = (activeDistrict === d ? null : d); render(); },
-      () => activeDistrict === d, 'district', d));
+      () => activeDistrict === d));
   });
-  districtChips.innerHTML = '';
-  districtChips.appendChild(frag);
+  extraDistrictChips.innerHTML = '';
+  extraDistrictChips.appendChild(frag);
 }
 
 function buildTagChips() {
@@ -42,11 +73,10 @@ function buildTagChips() {
   tagChips.appendChild(frag);
 }
 
-function makeChip(label, cnt, onClick, isActive, dataKey, dataVal) {
+function makeChip(label, cnt, onClick, isActive) {
   const b = document.createElement('button');
   b.className = 'chip';
   b.innerHTML = `${esc(label)}<span class="cnt">${cnt}</span>`;
-  if (dataKey === 'district') b.setAttribute('data-district', dataVal);
   b.onclick = onClick;
   b._isActive = isActive;
   return b;
@@ -66,6 +96,7 @@ function currentList() {
 }
 
 function render() {
+  refreshMapStates();
   refreshChipStates();
   const list = currentList();
 
@@ -76,7 +107,10 @@ function render() {
   resultCount.textContent = `共 ${list.length} 家`;
 
   if (!list.length) {
-    results.innerHTML = '<div class="empty">当前筛选条件下暂无收录企业。</div>';
+    const tip = activeDistrict
+      ? `${activeDistrict}暂无收录企业。`
+      : '当前筛选条件下暂无收录企业。';
+    results.innerHTML = `<div class="empty">${esc(tip)}</div>`;
     return;
   }
   results.innerHTML = '';
@@ -102,7 +136,8 @@ function render() {
   });
 }
 
-buildDistrictChips();
+buildMap();
+buildExtraChips();
 buildTagChips();
 render();
 initCommon();
