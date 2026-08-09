@@ -295,9 +295,11 @@ body.pull .header { text-align: center; }
   transition: opacity .3s, transform .3s, visibility .3s;
 }
 .disclaimer.visible { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-/* 短内容页（搜索页 / 小说书架页）：顶部对齐 + 额外底部空间，
-   使页面可向下滚动，从而统一“下滑到底”触发免责声明，首屏留白不变 */
-body.pull { justify-content: flex-start; min-height: calc(100vh + 220px); padding-top: 84px; }
+/* 短内容页（搜索页 / 小说书架页）：内容首屏垂直居中；
+   .wrap 用上下 auto 外边距在首屏居中，::after 在其后撑出可下滑余量 */
+body.pull { justify-content: flex-start; min-height: 100vh; }
+body.pull .wrap { margin-top: auto; margin-bottom: auto; }
+body.pull::after { content: ""; flex: none; width: 100%; height: 480px; }
 .disclaimer .disc-inner { max-width: 860px; margin: 0 auto; }
 .disclaimer p { margin: 0 0 3px; }
 .disclaimer p:last-child { margin-bottom: 0; }

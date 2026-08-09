@@ -183,7 +183,7 @@ function initDisclaimer() {
   if (!el) return;
   el.innerHTML = `<div class="disc-inner">${DISCLAIMER_HTML}</div>`;
 
-  const NEAR_BOTTOM = 24; // 距底部多少像素内视为“到底”
+  const NEAR_BOTTOM = 8; // 距底部多少像素内视为“到底”（收紧，需几乎贴底才触发）
   const update = () => {
     const doc = document.documentElement;
     // 统一规则：滚动到接近页面底部时才淡入，保持页面留白美观
