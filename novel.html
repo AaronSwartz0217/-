@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小说模式 · 杭州求职避雷网</title>
+<link rel="stylesheet" href="style.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem('theme');
+    var dark = saved ? saved === 'dark'
+      : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+  })();
+</script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="mode-switch" id="modeSwitch" data-mode="novel" role="tablist" aria-label="模式切换">
+        <span class="mode-thumb"></span>
+        <button class="mode-opt" data-target="index.html" role="tab">避雷</button>
+        <button class="mode-opt active" data-target="novel.html" role="tab">小说</button>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle">夜间模式</button>
+  </div>
+
+  <div class="wrap wide">
+    <div class="header">
+      <h1>小说模式</h1>
+      <p>收录来杭求职者的真实经历与随笔。点击书架上的作品，进入沉浸阅读。</p>
+    </div>
+
+    <div id="shelf" class="shelf"></div>
+    <div id="reader" class="reader"></div>
+
+    <div class="footer">
+      <p>本栏目内容为作者个人经历分享与创作，观点仅代表作者本人，不构成任何求职或决策建议。</p>
+      <p>如内容涉及您的合法权益，可通过公示的投诉渠道联系，我们将及时核实处理。</p>
+      <button class="contact-link" id="contactBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        联系我们
+      </button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <div class="agreement-overlay" id="agreementOverlay"></div>
+
+<script src="novels.js"></script>
+<script src="common.js"></script>
+<script src="novel.js"></script>
+</body>
+</html>

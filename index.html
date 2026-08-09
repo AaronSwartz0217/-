@@ -17,13 +17,20 @@
 </head>
 <body class="center">
   <div class="topbar">
-    <a class="icon-btn" href="regions.html" title="按地区筛选">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
-      </svg>
-      地区筛选
-    </a>
+    <div class="topbar-left">
+      <div class="mode-switch" id="modeSwitch" data-mode="lei" role="tablist" aria-label="模式切换">
+        <span class="mode-thumb"></span>
+        <button class="mode-opt active" data-target="index.html" role="tab">避雷</button>
+        <button class="mode-opt" data-target="novel.html" role="tab">小说</button>
+      </div>
+      <a class="icon-btn" href="regions.html" title="按地区筛选">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+        地区筛选
+      </a>
+    </div>
     <button class="icon-btn" id="themeToggle">夜间模式</button>
   </div>
 

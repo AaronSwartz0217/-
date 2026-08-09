@@ -181,6 +181,24 @@ function initAgreement() {
   overlay.addEventListener('click', dismiss);
 }
 
+// —— 模式切换开关（避雷 / 小说）——
+function initModeSwitch() {
+  const sw = document.getElementById('modeSwitch');
+  if (!sw) return;
+  const opts = sw.querySelectorAll('.mode-opt');
+  opts.forEach(opt => {
+    opt.onclick = () => {
+      if (opt.classList.contains('active')) return;
+      // 先滑动滑块，再跳转，营造开关切换的过渡感
+      opts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      sw.setAttribute('data-mode', opt.textContent.trim() === '小说' ? 'novel' : 'lei');
+      const target = opt.getAttribute('data-target');
+      setTimeout(() => { window.location.href = target; }, 180);
+    };
+  });
+}
+
 // 公共初始化：绑定遮罩点击关闭、Esc 关闭、主题按钮
 function initCommon() {
   initAgreement();
@@ -190,4 +208,5 @@ function initCommon() {
   const contactBtn = document.getElementById('contactBtn');
   if (contactBtn) contactBtn.onclick = showContact;
   initTheme();
+  initModeSwitch();
 }
