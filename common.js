@@ -186,10 +186,8 @@ function initDisclaimer() {
   const NEAR_BOTTOM = 24; // 距底部多少像素内视为“到底”
   const update = () => {
     const doc = document.documentElement;
-    const scrollable = doc.scrollHeight - window.innerHeight;
-    // 页面本身不可滚动（如首页居中留白）时始终隐藏，保持页面美观
-    const atBottom = scrollable > NEAR_BOTTOM &&
-      (window.scrollY + window.innerHeight >= doc.scrollHeight - NEAR_BOTTOM);
+    // 统一规则：滚动到接近页面底部时才淡入，保持页面留白美观
+    const atBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - NEAR_BOTTOM;
     el.classList.toggle('visible', atBottom);
   };
   update();
