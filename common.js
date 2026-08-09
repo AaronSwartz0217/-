@@ -177,10 +177,24 @@ const DISCLAIMER_HTML = `
   <p>本页声明与项目首页弹窗《用户访问与免责协议》具备同等效力。</p>
 `;
 
-// 将免责声明注入各页 footer 的占位容器
+// 将免责声明注入各页 footer 的占位容器，并在滚动到底部时淡入
 function initDisclaimer() {
   const el = document.getElementById('disclaimer');
-  if (el) el.innerHTML = DISCLAIMER_HTML;
+  if (!el) return;
+  el.innerHTML = `<div class="disc-inner">${DISCLAIMER_HTML}</div>`;
+
+  const NEAR_BOTTOM = 24; // 距底部多少像素内视为“到底”
+  const update = () => {
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - window.innerHeight;
+    // 页面本身不可滚动（如首页居中留白）时始终隐藏，保持页面美观
+    const atBottom = scrollable > NEAR_BOTTOM &&
+      (window.scrollY + window.innerHeight >= doc.scrollHeight - NEAR_BOTTOM);
+    el.classList.toggle('visible', atBottom);
+  };
+  update();
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
 }
 
 function initAgreement() {
