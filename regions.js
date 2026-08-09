@@ -14,7 +14,7 @@ let activeTag = null;
 // 地图上没有对应热区的行政区（外地 / 杭州全域等），用 chip 补充入口
 function extraDistricts() {
   const mapNames = new Set(MAP_REGIONS.map(r => r.name));
-  return [...new Set(BLACKLIST.map(c => c.district))].filter(d => !mapNames.has(d));
+  return [...new Set(VISIBLE_LIST.map(c => c.district))].filter(d => !mapNames.has(d));
 }
 
 // —— 地图热区 ——
@@ -60,7 +60,7 @@ function refreshMapSelected() {
 // —— 补充地区 chip（外地 / 杭州全域）+ 全部 ——
 function buildExtraChips() {
   const frag = document.createDocumentFragment();
-  frag.appendChild(makeChip('全部', BLACKLIST.length,
+  frag.appendChild(makeChip('全部', VISIBLE_LIST.length,
     () => { activeDistrict = null; render(); },
     () => activeDistrict === null));
   extraDistricts().forEach(d => {
@@ -75,7 +75,7 @@ function buildExtraChips() {
 function buildTagChips() {
   const frag = document.createDocumentFragment();
   allTags().forEach(t => {
-    const cnt = BLACKLIST.filter(c => (c.tags || []).includes(t)).length;
+    const cnt = VISIBLE_LIST.filter(c => (c.tags || []).includes(t)).length;
     frag.appendChild(makeChip(t, cnt,
       () => { activeTag = (activeTag === t ? null : t); render(); },
       () => activeTag === t));
@@ -100,7 +100,7 @@ function refreshChipStates() {
 }
 
 function currentList() {
-  return BLACKLIST.filter(c =>
+  return VISIBLE_LIST.filter(c =>
     (activeDistrict === null || c.district === activeDistrict) &&
     (activeTag === null || (c.tags || []).includes(activeTag))
   );

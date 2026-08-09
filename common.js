@@ -22,13 +22,13 @@ function searchCompanies(query) {
 }
 
 function countByDistrict(district) {
-  return BLACKLIST.filter(c => c.district === district).length;
+  return VISIBLE_LIST.filter(c => c.district === district).length;
 }
 
 // 收集所有出现过的风险标签（去重）
 function allTags() {
   const set = new Set();
-  BLACKLIST.forEach(c => (c.tags || []).forEach(t => set.add(t)));
+  VISIBLE_LIST.forEach(c => (c.tags || []).forEach(t => set.add(t)));
   return [...set];
 }
 

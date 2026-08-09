@@ -4,7 +4,7 @@ const btn = document.getElementById('searchBtn');
 const suggest = document.getElementById('suggest');
 const stat = document.getElementById('stat');
 
-stat.textContent = `已收录 ${BLACKLIST.length} 家`;
+stat.textContent = `已收录 ${VISIBLE_LIST.length} 家`;
 
 function doSearch() {
   const query = input.value.trim();
