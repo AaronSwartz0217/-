@@ -32,6 +32,23 @@ function renderShelf() {
     });
     shelf.appendChild(card);
   });
+
+  // 末尾追加「我要分享」卡片：点击立即弹出联系我们
+  const add = document.createElement('div');
+  add.className = 'book-card add-card';
+  add.setAttribute('role', 'button');
+  add.setAttribute('tabindex', '0');
+  add.setAttribute('aria-label', '我要分享');
+  add.innerHTML = `
+    <div class="add-plus">+</div>
+    <div class="add-text">我要分享</div>
+    <div class="add-sub">投稿你的求职经历</div>
+  `;
+  add.onclick = showContact;
+  add.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showContact(); }
+  });
+  shelf.appendChild(add);
 }
 
 // —— 阅读视图 ——
