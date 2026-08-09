@@ -80,6 +80,20 @@ function showSafe(query) {
   openModal();
 }
 
+// 联系我们：展示进群二维码海报
+function showContact() {
+  const { modal } = getModalEls();
+  modal.className = 'modal contact';
+  modal.innerHTML = `
+    <span class="badge">联系我们</span>
+    <h2>一起躺平平</h2>
+    <div class="subtitle">扫码进群，好工作 · 好机会 · 好未来</div>
+    <img class="contact-poster" src="contact-poster.jpg" alt="进群二维码海报">
+    <button class="close-btn" id="closeBtn">关闭</button>
+  `;
+  openModal();
+}
+
 function openModal() {
   const { overlay } = getModalEls();
   overlay.classList.add('show');
@@ -173,5 +187,7 @@ function initCommon() {
   const { overlay } = getModalEls();
   if (overlay) overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  const contactBtn = document.getElementById('contactBtn');
+  if (contactBtn) contactBtn.onclick = showContact;
   initTheme();
 }
