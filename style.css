@@ -233,17 +233,21 @@ body.center { justify-content: center; min-height: 100vh; }
 .footer p { margin: 0 0 6px; }
 .footer p:last-child { margin-bottom: 0; }
 .contact-link {
-  margin-top: 14px;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+  padding: 8px 16px;
   font-size: 13px;
   color: var(--text-soft);
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   cursor: pointer;
-  transition: color .15s, border-color .15s;
+  transition: border-color .15s, color .15s;
 }
-.contact-link:hover { color: var(--text); border-color: var(--accent); }
+.contact-link svg { width: 14px; height: 14px; }
+.contact-link:hover { border-color: var(--accent); color: var(--text); }
 
 /* 联系我们弹窗内的二维码海报 */
 .modal.contact .contact-poster {
