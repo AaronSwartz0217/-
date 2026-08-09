@@ -183,12 +183,15 @@ function initDisclaimer() {
   if (!el) return;
   el.innerHTML = `<div class="disc-inner">${DISCLAIMER_HTML}</div>`;
 
-  const NEAR_BOTTOM = 8; // 距底部多少像素内视为“到底”（收紧，需几乎贴底才触发）
+  const NEAR_BOTTOM = 8;   // 距底部多少像素内视为“到底”（收紧，需几乎贴底才触发）
+  const SCROLLABLE = 120;  // 页面比视口高出多少才算“可自然滚动”，短页面（主页/书架）不满足即永不显示
   const update = () => {
     const doc = document.documentElement;
-    // 统一规则：滚动到接近页面底部时才淡入，保持页面留白美观
+    // 仅当页面确实可自然滚动时才可能显示：短页面（主页 / 小说书架）内容居中留白，永不弹出协议
+    const scrollable = doc.scrollHeight > window.innerHeight + SCROLLABLE;
+    // 长页面（地区页）滚动到接近底部时才淡入，保持页面留白美观
     const atBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - NEAR_BOTTOM;
-    el.classList.toggle('visible', atBottom);
+    el.classList.toggle('visible', scrollable && atBottom);
   };
   update();
   window.addEventListener('scroll', update, { passive: true });
