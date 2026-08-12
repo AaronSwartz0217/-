@@ -17,6 +17,36 @@ function extraDistricts() {
   return [...new Set(VISIBLE_LIST.map(c => c.district))].filter(d => !mapNames.has(d));
 }
 
+// —— 各区统计柱状图 ——
+function buildBarChart() {
+  const chart = document.getElementById('barChart');
+  if (!chart) return;
+  const stats = HZ_DISTRICTS.map(d => ({ name: d.key, count: countByDistrict(d.key) }));
+  extraDistricts().forEach(d => stats.push({ name: d, count: countByDistrict(d) }));
+  stats.sort((a, b) => b.count - a.count);
+  const max = Math.max(...stats.map(s => s.count), 1);
+
+  chart.innerHTML = '';
+  stats.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.setAttribute('data-district', s.name);
+    row.innerHTML = `
+      <span class="bar-label">${esc(s.name)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(s.count / max * 100)}%"></div></div>
+      <span class="bar-count">${s.count}</span>
+    `;
+    row.onclick = () => { activeDistrict = (activeDistrict === s.name ? null : s.name); render(); };
+    chart.appendChild(row);
+  });
+}
+
+function refreshBarChart() {
+  document.querySelectorAll('.bar-row').forEach(r => {
+    r.classList.toggle('active', r.getAttribute('data-district') === activeDistrict);
+  });
+}
+
 // —— 地图热区 ——
 function buildMap() {
   const frag = document.createDocumentFragment();
@@ -110,6 +140,7 @@ function render() {
   refreshMapStates();
   refreshMapSelected();
   refreshChipStates();
+  refreshBarChart();
   const list = currentList();
 
   const parts = [];
@@ -148,6 +179,7 @@ function render() {
   });
 }
 
+buildBarChart();
 buildMap();
 buildExtraChips();
 buildTagChips();
