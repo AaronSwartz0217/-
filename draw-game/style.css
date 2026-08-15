@@ -334,8 +334,6 @@ body {
   flex-direction: column;
   gap: 6px;
   font-size: 13px;
-  max-height: 220px;
-  overflow-y: auto;
 }
 .log-item {
   padding: 8px 10px;
@@ -351,6 +349,7 @@ body {
 .log-empty { color: var(--text-faint); font-size: 13px; text-align: center; padding: 10px 0; }
 
 /* 弹窗 */
+body:has(.modal-mask.show) { overflow: hidden; }
 .modal-mask {
   position: fixed;
   inset: 0;
