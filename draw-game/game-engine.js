@@ -80,16 +80,16 @@ window.GameEngine = (function () {
 
   // 出现率（杭州加成后归一化）
   function appearanceRates() {
-    let n = 20, r = 40, sr = 30, ssr = 10;
+    let n = 20, r = 40, sr = 30, ssr = 10, sssr = 0.1;
     if (state.settings.hzBoost) { sr += 5; ssr += 5; }
-    const t = n + r + sr + ssr;
-    return { N: n / t, R: r / t, SR: sr / t, SSR: ssr / t };
+    const t = n + r + sr + ssr + sssr;
+    return { N: n / t, R: r / t, SR: sr / t, SSR: ssr / t, SSSR: sssr / t };
   }
 
   // 实际录取率 = 等级基础录取率(含加成) × (地区录取率 / 100)
   function hireRate(level, districtHire) {
     if (level === 'N') return 0;
-    let base = { R: 80, SR: 30, SSR: 10 }[level];
+    let base = { R: 80, SR: 30, SSR: 10, SSSR: 100 }[level];
     if (state.settings.hzBoost) {
       if (level === 'R') base += 5;
       else if (level === 'SR') base += 8;
@@ -103,11 +103,11 @@ window.GameEngine = (function () {
     const rates = appearanceRates();
     const r = Math.random();
     let c = 0;
-    for (const lv of ['N', 'R', 'SR', 'SSR']) {
+    for (const lv of ['N', 'R', 'SR', 'SSR', 'SSSR']) {
       c += rates[lv];
       if (r < c) return lv;
     }
-    return 'SSR';
+    return 'SSSR';
   }
 
   function generateCard() {
@@ -163,7 +163,7 @@ window.GameEngine = (function () {
       };
       state.stats.successCount++;
       // bestJob
-      const order = { R: 1, SR: 2, SSR: 3 };
+      const order = { R: 1, SR: 2, SSR: 3, SSSR: 4 };
       const cur = state.stats.bestJob;
       if (!cur || order[card.level] > order[cur.level]) {
         state.stats.bestJob = { name: card.name, level: card.level };
@@ -213,7 +213,7 @@ window.GameEngine = (function () {
       state.stats.eventTriggered++;
       if (Math.random() < 0.4) {
         // 正面
-        eventObj = pickWeighted(EVENTS_POS, [25, 25, 25, 25]);
+        eventObj = pickWeighted(EVENTS_POS, [25, 25, 20, 20, 18, 10, 15, 12, 10]);
         if (eventObj.type === 'money') {
           eventMoney = randInt(eventObj.min, eventObj.max);
         } else if (eventObj.type === 'draws') {
@@ -221,7 +221,7 @@ window.GameEngine = (function () {
         }
       } else {
         // 负面
-        eventObj = pickWeighted(EVENTS_NEG, [20, 20, 20, 15, 15, 10]);
+        eventObj = pickWeighted(EVENTS_NEG, [18, 15, 10, 12, 14, 8, 12, 10, 15, 10, 12]);
         if (eventObj.type === 'income_half') income *= 0.5;
         else if (eventObj.type === 'income_zero') income = 0;
         else if (eventObj.type === 'money') eventMoney = eventObj.min;

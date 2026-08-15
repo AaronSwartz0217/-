@@ -53,7 +53,7 @@
     <button class="btn primary" id="btnSingle"><span>单抽</span><span class="btn-sub">消耗 1 次</span></button>
     <button class="btn" id="btnTen"><span>十连抽</span><span class="btn-sub">消耗 10 次</span></button>
     <button class="btn" id="btnNext"><span>跳过本月</span><span class="btn-sub">不抽卡直接过月</span></button>
-    <button class="btn" id="btnDex"><span>图鉴</span><span class="btn-sub" id="dexCount">0 / 28</span></button>
+    <button class="btn" id="btnDex"><span>图鉴</span><span class="btn-sub" id="dexCount">0 / 29</span></button>
     <button class="btn danger" id="btnReset"><span>重新开始</span><span class="btn-sub">清空存档</span></button>
   </div>
 
@@ -67,6 +67,15 @@
   <div class="card">
     <div class="section-title">事件日志 <span class="tag" id="logTag">最近 10 条</span></div>
     <div class="log-list" id="logList"></div>
+  </div>
+
+  <!-- 兑换码 -->
+  <div class="card redeem-card">
+    <div class="section-title">兑换码</div>
+    <div class="redeem-row">
+      <input type="text" id="redeemInput" class="redeem-input" placeholder="输入兑换码" autocomplete="off">
+      <button class="btn primary" id="btnRedeem"><span>兑换</span></button>
+    </div>
   </div>
 
   <div class="foot">

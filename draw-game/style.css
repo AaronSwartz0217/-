@@ -17,6 +17,7 @@
   --level-R: #4A90D9;
   --level-SR: #9B59B6;
   --level-SSR: #F39C12;
+  --level-SSSR: #B03060;
 }
 html[data-theme="dark"] {
   --bg: #16181d;
@@ -200,6 +201,7 @@ body {
 .lvl-R { background: var(--level-R); }
 .lvl-SR { background: var(--level-SR); }
 .lvl-SSR { background: var(--level-SSR); }
+.lvl-SSSR { background: var(--level-SSSR); }
 
 /* 操作按钮 */
 .actions {
@@ -513,3 +515,21 @@ body {
 
 /* 确认弹窗正文 */
 .confirm-body { font-size: 14px; line-height: 1.6; color: var(--text-soft); }
+
+/* 兑换码 */
+.redeem-row { display: flex; gap: 8px; margin-top: 10px; }
+.redeem-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s;
+}
+.redeem-input:focus { border-color: var(--accent); }
+.redeem-row .btn { flex: 0 0 auto; padding: 10px 18px; }

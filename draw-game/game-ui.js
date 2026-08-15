@@ -52,8 +52,8 @@ window.GameUI = (function () {
     renderDrawResult();
 
     // 图鉴计数
-    const collected = state.collection.R.length + state.collection.SR.length + state.collection.SSR.length;
-    const total = JOBS.R.length + JOBS.SR.length + JOBS.SSR.length;
+    const collected = state.collection.R.length + state.collection.SR.length + state.collection.SSR.length + state.collection.SSSR.length;
+    const total = JOBS.R.length + JOBS.SR.length + JOBS.SSR.length + JOBS.SSSR.length;
     $('dexCount').textContent = collected + ' / ' + total;
 
     // 日志
@@ -347,6 +347,39 @@ window.GameUI = (function () {
     toast('已重新开始，祝你好运');
   }
 
+  /* ---------- 兑换码 ---------- */
+  function redeemCode() {
+    const state = E.state;
+    const input = $('redeemInput');
+    const code = (input.value || '').trim();
+    if (!code) { toast('请输入兑换码'); return; }
+    if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
+    if (code !== '李东盛') { toast('兑换码无效'); return; }
+
+    // 构造「作者」SSSR 卡（随机地区，SSSR 录取率 100% 必入职）
+    const district = E.pickDistrict();
+    const s = D.SALARY.SSSR;
+    const card = {
+      level: 'SSSR',
+      name: '作者',
+      district: district.name,
+      salaryMin: s[0],
+      salaryMax: s[1],
+      districtHire: district.hire,
+      isN: false
+    };
+    const res = E.attemptHire(card);
+    if (res.ok) {
+      toast('兑换成功：已获得「作者」岗位');
+      E.addLog('兑换码生效：直接获得「作者」（SSSR）@ ' + district.name, 'pos');
+    } else {
+      toast('兑换失败');
+    }
+    input.value = '';
+    E.saveState();
+    render();
+  }
+
   /* ---------- 十连抽弹窗 ---------- */
   function openTenModal() { $('tenModal').classList.add('show'); renderTenModal(); }
   function closeTenModal() { $('tenModal').classList.remove('show'); }
@@ -400,7 +433,8 @@ window.GameUI = (function () {
     const groups = [
       { level: 'R', label: 'R · 基层工作' },
       { level: 'SR', label: 'SR · 中级工作' },
-      { level: 'SSR', label: 'SSR · 高级工作' }
+      { level: 'SSR', label: 'SSR · 高级工作' },
+      { level: 'SSSR', label: 'SSSR · 作者' }
     ];
     let collected = 0, total = 0;
     body.innerHTML = groups.map(g => {
@@ -502,6 +536,10 @@ window.GameUI = (function () {
     $('btnDex').onclick = openDexModal;
     $('btnReset').onclick = resetGame;
     $('themeToggle').onclick = toggleTheme;
+
+    // 兑换码
+    $('btnRedeem').onclick = redeemCode;
+    $('redeemInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') redeemCode(); });
 
     $('tenClose').onclick = tenDeclineAll;
     $('tenConfirm').onclick = tenConfirm;

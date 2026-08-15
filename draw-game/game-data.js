@@ -5,7 +5,8 @@ window.GameData = (function () {
   const JOBS = {
     R: ['外卖骑手','快递员','便利店店员','保安','保洁','餐厅服务员','超市收银员','工厂普工','建筑工人','搬运工'],
     SR: ['程序员','设计师','运营专员','会计','销售经理','行政主管','人力资源专员','市场策划','客服主管','采购专员'],
-    SSR: ['产品总监','技术架构师','财务总监','市场部负责人','高级工程师','运营总监','人力资源总监','销售总监']
+    SSR: ['产品总监','技术架构师','财务总监','市场部负责人','高级工程师','运营总监','人力资源总监','销售总监'],
+    SSSR: ['作者']
   };
 
   const DISTRICTS = [
@@ -19,23 +20,33 @@ window.GameData = (function () {
     { name:'钱塘区', jobs:4,  hire:96,  quit:2.0,  rentMin:1500, rentMax:2500, living:2200 }
   ];
 
-  const SALARY = { R:[2000,6000], SR:[6000,10000], SSR:[10000,20000] };
-  const LEVEL_NAME = { N:'错过', R:'基层', SR:'中级', SSR:'高级' };
+  const SALARY = { R:[2000,6000], SR:[6000,10000], SSR:[10000,20000], SSSR:[100000,100000] };
+  const LEVEL_NAME = { N:'错过', R:'基层', SR:'中级', SSR:'高级', SSSR:'作者' };
 
   // 意外事件
   const EVENTS_POS = [
     { name:'年终奖到账', desc:'金钱 +3,000~8,000',     type:'money', min:3000, max:8000 },
     { name:'项目奖金',   desc:'金钱 +2,000~5,000',     type:'money', min:2000, max:5000 },
     { name:'贵人相助',   desc:'获得 3 次额外抽卡机会', type:'draws', value:3 },
-    { name:'副业收入',   desc:'金钱 +1,000~3,000',     type:'money', min:1000, max:3000 }
+    { name:'副业收入',   desc:'金钱 +1,000~3,000',     type:'money', min:1000, max:3000 },
+    { name:'兼职接单',   desc:'金钱 +500~1,500',       type:'money', min:500,  max:1500 },
+    { name:'基金分红',   desc:'金钱 +2,000~6,000',     type:'money', min:2000, max:6000 },
+    { name:'退税到账',   desc:'金钱 +1,000~2,500',     type:'money', min:1000, max:2500 },
+    { name:'灵感迸发',   desc:'获得 2 次额外抽卡机会', type:'draws', value:2 },
+    { name:'亲友周转',   desc:'金钱 +3,000~5,000',     type:'money', min:3000, max:5000 }
   ];
   const EVENTS_NEG = [
-    { name:'公司拖欠工资', desc:'本月收入减半',         type:'income_half' },
-    { name:'招聘诈骗',     desc:'金钱 -2,000',          type:'money', min:-2000, max:-2000 },
-    { name:'无故辞退',     desc:'立即失去当前工作',     type:'lose_job' },
-    { name:'租房被骗',     desc:'金钱 -3,000',          type:'money', min:-3000, max:-3000 },
+    { name:'公司拖欠工资', desc:'本月收入减半',           type:'income_half' },
+    { name:'招聘诈骗',     desc:'金钱 -2,000',            type:'money', min:-2000, max:-2000 },
+    { name:'无故辞退',     desc:'立即失去当前工作',       type:'lose_job' },
+    { name:'租房被骗',     desc:'金钱 -3,000',            type:'money', min:-3000, max:-3000 },
     { name:'加班过劳',     desc:'下月收入 -10%（可叠加）', type:'penalty' },
-    { name:'HR刁难',        desc:'本月收入归零',         type:'income_zero' }
+    { name:'HR刁难',        desc:'本月收入归零',           type:'income_zero' },
+    { name:'突发医疗费',   desc:'金钱 -1,500',            type:'money', min:-1500, max:-1500 },
+    { name:'手机碎屏',     desc:'金钱 -2,500',            type:'money', min:-2500, max:-2500 },
+    { name:'团建自费',     desc:'金钱 -800',              type:'money', min:-800,  max:-800 },
+    { name:'押金纠纷',     desc:'金钱 -1,200',            type:'money', min:-1200, max:-1200 },
+    { name:'迟到扣绩效',   desc:'下月收入 -10%（可叠加）', type:'penalty' }
   ];
 
   const GOAL = 1000000;
@@ -54,7 +65,7 @@ window.GameData = (function () {
       netWorth: 15000,
       totalIncome: 0,
       currentJob: null,
-      collection: { R:[], SR:[], SSR:[] },
+      collection: { R:[], SR:[], SSR:[], SSSR:[] },
       stats: { successCount:0, missCount:0, eventTriggered:0, monthsWorked:0, bestJob:null },
       gameOver: false,
       gameResult: null,
