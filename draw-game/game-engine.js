@@ -7,6 +7,9 @@ window.GameEngine = (function () {
   const SALARY = D.SALARY;
   const EVENTS_POS = D.EVENTS_POS;
   const EVENTS_NEG = D.EVENTS_NEG;
+  const CHOICE_EVENTS = D.CHOICE_EVENTS;
+  const BLACK_COMPANIES = D.BLACK_COMPANIES;
+  const BLACK_RATE = D.BLACK_RATE;
   const GOAL = D.GOAL;
   const BANKRUPT = D.BANKRUPT;
   const TOTAL_MONTHS = D.TOTAL_MONTHS;
@@ -27,6 +30,11 @@ window.GameEngine = (function () {
         state.settings = Object.assign({}, d.settings, p.settings || {});
         state.collection = Object.assign({}, d.collection, p.collection || {});
         if (!Array.isArray(state.log)) state.log = [];
+        if (!Array.isArray(state.eventQueue)) state.eventQueue = [];
+        // 迁移旧版 pendingChoice → eventQueue
+        if (p.pendingChoice && !state.eventQueue.length) {
+          state.eventQueue.push({ kind: 'choice', event: p.pendingChoice.event });
+        }
         if (typeof state.drawChances !== 'number') state.drawChances = randInt(10, 200);
       } else {
         state = defaultState();
@@ -116,21 +124,29 @@ window.GameEngine = (function () {
       return { level: 'N', name: '错过', district: null, salaryMin: 0, salaryMax: 0, isN: true };
     }
     const district = pickDistrict();
-    const list = JOBS[level];
-    const name = list[Math.floor(Math.random() * list.length)];
     const s = SALARY[level];
-    const smin = s[0], smax = s[1];
+    // 黑心公司判定（SSSR「作者」不黑心）
+    let blacklist = false;
+    let name;
+    if (level !== 'SSSR' && Math.random() < BLACK_RATE) {
+      blacklist = true;
+      name = BLACK_COMPANIES[Math.floor(Math.random() * BLACK_COMPANIES.length)];
+    } else {
+      const list = JOBS[level];
+      name = list[Math.floor(Math.random() * list.length)];
+    }
     return {
       level: level,
       name: name,
       district: district.name,
-      salaryMin: smin,
-      salaryMax: smax,
+      salaryMin: s[0],
+      salaryMax: s[1],
       districtHire: district.hire,
       districtQuit: district.quit,
       rentMin: district.rentMin,
       rentMax: district.rentMax,
-      living: district.living
+      living: district.living,
+      blacklist: blacklist
     };
   }
 
@@ -160,6 +176,15 @@ window.GameEngine = (function () {
     return result;
   }
 
+  /* ---------- 抉择入队（抽卡结果处理完后调用） ---------- */
+  function triggerChoiceIntoQueue() {
+    if (Math.random() < 0.15) {
+      const ev = CHOICE_EVENTS[Math.floor(Math.random() * CHOICE_EVENTS.length)];
+      state.eventQueue.push({ kind: 'choice', event: ev });
+      addLog('触发抉择：' + ev.name, 'sys');
+    }
+  }
+
   /* ---------- 录取判定 ---------- */
   // 返回 { ok, dup, rate }
   function attemptHire(card) {
@@ -180,7 +205,8 @@ window.GameEngine = (function () {
         level: card.level,
         district: card.district,
         salaryMin: card.salaryMin,
-        salaryMax: card.salaryMax
+        salaryMax: card.salaryMax,
+        blacklist: !!card.blacklist
       };
       state.stats.successCount++;
       // bestJob
@@ -229,10 +255,12 @@ window.GameEngine = (function () {
     let eventObj = null;
     let lostJobViaEvent = false;
 
-    // 事件判定
+    // 事件判定（负面占比：正常 30%，黑心公司 60%）
+    let posRate = 0.7;
+    if (state.currentJob && state.currentJob.blacklist) posRate = 0.4;
     if (Math.random() < 0.3) {
       state.stats.eventTriggered++;
-      if (Math.random() < 0.4) {
+      if (Math.random() < posRate) {
         // 正面
         eventObj = pickWeighted(EVENTS_POS, [25, 25, 20, 20, 18, 10, 15, 12, 10]);
         if (eventObj.type === 'money') {
@@ -264,7 +292,24 @@ window.GameEngine = (function () {
 
     if (eventObj) {
       const isPos = EVENTS_POS.indexOf(eventObj) >= 0;
-      addLog((isPos ? '【正面】' : '【负面】') + eventObj.name + '：' + eventObj.desc, isPos ? 'pos' : 'neg');
+      // 计算实际结果文本
+      let resultText = eventObj.desc;
+      if (eventObj.type === 'money') {
+        resultText = (eventMoney >= 0 ? '+' : '') + fmt(eventMoney) + ' 元';
+      } else if (eventObj.type === 'draws') {
+        resultText = '+' + eventObj.value + ' 次抽卡机会';
+      } else if (eventObj.type === 'income_half') {
+        resultText = '本月收入减半';
+      } else if (eventObj.type === 'income_zero') {
+        resultText = '本月收入归零';
+      } else if (eventObj.type === 'lose_job') {
+        resultText = '立即失去当前工作';
+      } else if (eventObj.type === 'penalty') {
+        resultText = '下月收入 -10%';
+      }
+      // 入事件队列（供弹窗展示）
+      state.eventQueue.push({ kind: 'random', name: eventObj.name, desc: eventObj.desc, result: resultText, type: isPos ? 'pos' : 'neg' });
+      addLog((isPos ? '【正面】' : '【负面】') + eventObj.name + '：' + resultText, isPos ? 'pos' : 'neg');
     }
 
     // 无故辞退
@@ -326,6 +371,7 @@ window.GameEngine = (function () {
     addLog: addLog,
     attemptHire: attemptHire,
     applyChoiceEffect: applyChoiceEffect,
+    triggerChoiceIntoQueue: triggerChoiceIntoQueue,
     settleMonthCore: settleMonthCore
   };
 })();

@@ -123,6 +123,10 @@ window.GameData = (function () {
   const STORAGE_KEY = 'jobDrawGame_v3';
   const THEME_KEY = 'theme';
 
+  // 黑心公司（抽卡有概率出现，入职后坏事概率提升）
+  const BLACK_COMPANIES = ['血汗工厂', '皮包公司', '996科技', '劳务中介陷阱', '无良销售公司', '克扣工资小作坊'];
+  const BLACK_RATE = 0.20;
+
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
   function defaultState() {
@@ -141,7 +145,7 @@ window.GameData = (function () {
       nextIncomePenalty: 0,
       pendingSingle: null,
       pendingTen: null,
-      pendingChoice: null,
+      eventQueue: [],
       log: []
     };
   }
@@ -159,6 +163,8 @@ window.GameData = (function () {
     TOTAL_MONTHS: TOTAL_MONTHS,
     STORAGE_KEY: STORAGE_KEY,
     THEME_KEY: THEME_KEY,
+    BLACK_COMPANIES: BLACK_COMPANIES,
+    BLACK_RATE: BLACK_RATE,
     defaultState: defaultState
   };
 })();

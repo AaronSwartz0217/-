@@ -60,9 +60,6 @@ window.GameUI = (function () {
 
     // 日志
     renderLog();
-
-    // 抉择事件弹窗（存在未完成抉择时自动弹出）
-    if (state.pendingChoice) openChoiceModal();
   }
 
   function renderJob() {
@@ -81,6 +78,7 @@ window.GameUI = (function () {
       '<div class="job-head">' +
         '<span class="lvl lvl-' + j.level + '">' + j.level + '</span>' +
         '<span class="job-name">' + escapeHtml(j.name) + '</span>' +
+        (j.blacklist ? '<span class="black-tag">黑心</span>' : '') +
         '<span class="job-meta">' + escapeHtml(j.district) + '</span>' +
       '</div>' +
       '<div class="job-rows">' +
@@ -90,6 +88,7 @@ window.GameUI = (function () {
         '<div><span class="k">月离职率：</span><span class="v">' + d.quit + '%</span></div>' +
         '<div><span class="k">地区录取率：</span><span class="v">' + d.hire + '%</span></div>' +
         '<div><span class="k">预估月支出：</span><span class="v">' + E.fmt(d.rentMin + d.living) + ' ~ ' + E.fmt(d.rentMax + d.living) + ' 元</span></div>' +
+        (j.blacklist ? '<div><span class="k">特殊：</span><span class="v black-text">黑心公司 · 负面概率 60%</span></div>' : '') +
       '</div>' +
       '<div class="job-actions">' +
         '<button class="btn danger" id="btnResign"><span>主动离职</span></button>' +
@@ -110,7 +109,7 @@ window.GameUI = (function () {
     body.innerHTML = renderBigCard(card);
     if (card.isN) {
       actions.innerHTML = '<button class="btn" id="drDismiss"><span>知道了</span></button>';
-      $('drDismiss').onclick = () => { state.pendingSingle = null; E.saveState(); closeSingleModal(); render(); };
+      $('drDismiss').onclick = () => { state.pendingSingle = null; E.saveState(); closeSingleModal(); render(); afterAction(); };
     } else {
       actions.innerHTML = '<button class="btn primary" id="drAccept"><span>录取</span></button><button class="btn" id="drDecline"><span>放弃</span></button>';
       $('drAccept').onclick = acceptSingle;
@@ -162,40 +161,44 @@ window.GameUI = (function () {
     ).join('');
   }
 
-  /* ---------- 抉择事件 ---------- */
-  // 在抽卡/跳过本月前判定是否触发抉择，触发则暂停等待玩家选择
-  function maybeTriggerChoice(action) {
+  /* ---------- 事件队列（随机事件 + 抉择统一管理） ---------- */
+  // 在抽卡结果处理完 / 跳过本月后调用：触发抉择入队 + 依次展示队列
+  function afterAction() {
     const state = E.state;
-    if (state.pendingChoice) { openChoiceModal(); return true; }
-    if (Math.random() < 0.15) {
-      const events = D.CHOICE_EVENTS;
-      const ev = events[Math.floor(Math.random() * events.length)];
-      state.pendingChoice = { event: ev, action: action };
-      E.addLog('触发抉择：' + ev.name, 'sys');
-      E.saveState();
-      render();
-      return true;
+    if (state.gameOver) { openEndModal(); return; }
+    E.triggerChoiceIntoQueue();
+    E.saveState();
+    processEventQueue();
+  }
+
+  // 幂等：根据队列首项弹出对应弹窗（抽卡结果未处理时不弹事件）
+  function processEventQueue() {
+    const state = E.state;
+    if (state.gameOver) { closeEventModal(); closeChoiceModal(); openEndModal(); return; }
+    if (!state.eventQueue || !state.eventQueue.length) { closeEventModal(); closeChoiceModal(); return; }
+    if (state.pendingSingle || (state.pendingTen && !state.pendingTen.resolved)) return;
+    const ev = state.eventQueue[0];
+    if (ev.kind === 'random') {
+      if (!$('eventModal').classList.contains('show')) openEventModal();
+    } else if (ev.kind === 'choice') {
+      if (!$('choiceModal').classList.contains('show')) openChoiceModal();
     }
-    return false;
   }
 
   function resolveChoice(idx) {
     const state = E.state;
-    const pc = state.pendingChoice;
-    if (!pc) return;
-    const opt = pc.event.options[idx];
+    const ev = state.eventQueue[0];
+    if (!ev || ev.kind !== 'choice') return;
+    const opt = ev.event.options[idx];
     if (!opt) return;
     const eff = opt.effect;
     const resultText = E.applyChoiceEffect(eff);
     const isNeg = (eff.type === 'money' && eff.min < 0) || eff.type === 'penalty';
-    E.addLog('抉择【' + pc.event.name + '】' + opt.text + '：' + resultText, isNeg ? 'neg' : 'pos');
+    E.addLog('抉择【' + ev.event.name + '】' + opt.text + '：' + resultText, isNeg ? 'neg' : 'pos');
     toast(opt.text + '：' + resultText);
-    const action = pc.action;
-    state.pendingChoice = null;
+    state.eventQueue.shift();
     closeChoiceModal();
     E.saveState();
-    render();
-    // 抉择可能直接导致胜负
     if (state.netWorth >= GOAL || state.netWorth < BANKRUPT) {
       state.gameOver = true;
       state.gameResult = state.netWorth >= GOAL ? 'win' : 'bankrupt';
@@ -205,21 +208,22 @@ window.GameUI = (function () {
       openEndModal();
       return;
     }
-    if (action === 'single') singleDrawProceed();
-    else if (action === 'ten') tenDrawProceed();
-    else settleMonthProceed();
+    render();
+    processEventQueue();
   }
 
+  /* ---------- 抉择弹窗 ---------- */
   function openChoiceModal() { renderChoiceModal(); $('choiceModal').classList.add('show'); }
   function closeChoiceModal() { $('choiceModal').classList.remove('show'); }
 
   function renderChoiceModal() {
     const state = E.state;
-    const pc = state.pendingChoice;
-    if (!pc) { closeChoiceModal(); return; }
-    $('choiceTitle').textContent = '抉择 · ' + pc.event.name;
-    $('choiceDesc').textContent = pc.event.desc;
-    const opts = pc.event.options;
+    const ev = state.eventQueue && state.eventQueue[0];
+    if (!ev || ev.kind !== 'choice') { closeChoiceModal(); return; }
+    const cev = ev.event;
+    $('choiceTitle').textContent = '抉择 · ' + cev.name;
+    $('choiceDesc').textContent = cev.desc;
+    const opts = cev.options;
     $('choiceOptions').innerHTML = opts.map((o, i) =>
       '<button class="choice-opt" data-i="' + i + '">' +
         '<div class="co-text">' + escapeHtml(o.text) + '</div>' +
@@ -231,6 +235,30 @@ window.GameUI = (function () {
     });
   }
 
+  /* ---------- 随机事件弹窗 ---------- */
+  function openEventModal() { renderEventModal(); $('eventModal').classList.add('show'); }
+  function closeEventModal() { $('eventModal').classList.remove('show'); }
+
+  function renderEventModal() {
+    const state = E.state;
+    const ev = state.eventQueue && state.eventQueue[0];
+    if (!ev || ev.kind !== 'random') { closeEventModal(); return; }
+    $('eventTitle').textContent = (ev.type === 'pos' ? '【好运】' : '【麻烦】') + ev.name;
+    $('eventBody').innerHTML =
+      '<div class="event-desc">' + escapeHtml(ev.desc) + '</div>' +
+      '<div class="event-result ' + ev.type + '">' + escapeHtml(ev.result) + '</div>';
+  }
+
+  function dismissEvent() {
+    const state = E.state;
+    if (!state.eventQueue.length) { closeEventModal(); return; }
+    state.eventQueue.shift();
+    closeEventModal();
+    E.saveState();
+    render();
+    processEventQueue();
+  }
+
   /* ---------- 抽卡交互（含自动过月） ---------- */
 
   // 单抽：先生成卡牌前自动触发一次月结算
@@ -238,7 +266,6 @@ window.GameUI = (function () {
     const state = E.state;
     if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     if (state.drawChances < 1) { toast('抽卡次数不足'); return; }
-    if (maybeTriggerChoice('single')) return;
     singleDrawProceed();
   }
 
@@ -268,6 +295,7 @@ window.GameUI = (function () {
       state.pendingSingle = null;
       E.saveState();
       render();
+      afterAction();
       return;
     }
     const res = E.attemptHire(card);
@@ -281,6 +309,7 @@ window.GameUI = (function () {
     state.pendingSingle = null;
     E.saveState();
     render();
+    afterAction();
   }
 
   function declineSingle() {
@@ -291,6 +320,7 @@ window.GameUI = (function () {
     state.pendingSingle = null;
     E.saveState();
     render();
+    afterAction();
   }
 
   // 十连抽：先生成卡牌前自动触发一次月结算（仅一次）
@@ -298,7 +328,6 @@ window.GameUI = (function () {
     const state = E.state;
     if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     if (state.drawChances < 10) { toast('需要 10 次抽卡机会'); return; }
-    if (maybeTriggerChoice('ten')) return;
     tenDrawProceed();
   }
 
@@ -368,6 +397,7 @@ window.GameUI = (function () {
     E.saveState();
     closeTenModal();
     render();
+    afterAction();
   }
 
   /* ---------- 跳过本月（不抽卡直接过月） ---------- */
@@ -378,7 +408,6 @@ window.GameUI = (function () {
       toast('请先处理当前抽卡结果');
       return;
     }
-    if (maybeTriggerChoice('skip')) return;
     settleMonthProceed();
   }
 
@@ -388,6 +417,7 @@ window.GameUI = (function () {
     E.settleMonthCore();
     render();
     if (state.gameOver) openEndModal();
+    else afterAction();
   }
 
   /* ---------- 主动离职 ---------- */
@@ -626,6 +656,9 @@ window.GameUI = (function () {
     $('btnRedeem').onclick = redeemCode;
     $('redeemInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') redeemCode(); });
 
+    // 事件弹窗（随机事件告知）
+    $('eventOk').onclick = dismissEvent;
+
     $('tenClose').onclick = tenDeclineAll;
     $('tenConfirm').onclick = tenConfirm;
     $('tenDecline').onclick = tenDeclineAll;
@@ -682,6 +715,7 @@ window.GameUI = (function () {
     openTenModal: openTenModal,
     openEndModal: openEndModal,
     openSetModal: openSetModal,
+    processEventQueue: processEventQueue,
     initTheme: initTheme,
     bindEvents: bindEvents,
     bindSettingsEntry: bindSettingsEntry
