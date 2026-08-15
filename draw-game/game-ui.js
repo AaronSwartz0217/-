@@ -651,7 +651,6 @@ window.GameUI = (function () {
     $('btnDex').onclick = openDexModal;
     $('btnReset').onclick = resetGame;
     $('themeToggle').onclick = toggleTheme;
-    $('themeInline').onclick = toggleTheme;
 
     // 兑换码
     $('btnRedeem').onclick = redeemCode;

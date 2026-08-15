@@ -147,8 +147,6 @@ body {
   border-radius: 10px;
   color: var(--text-faint);
 }
-/* 手机端卡片内主题切换按钮（默认隐藏） */
-.theme-inline { display: none; margin-left: auto; font-size: 12px; padding: 4px 12px; }
 
 /* 当前工作 */
 .job-card .job-head {
@@ -648,5 +646,4 @@ body {
   .choice-opt { padding: 11px 12px; }
   .redeem-row { flex-wrap: wrap; }
   .redeem-input { min-width: 100%; }
-  .theme-inline { display: inline-block; }
 }
