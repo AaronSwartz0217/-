@@ -579,6 +579,13 @@ html[data-theme="dark"] .map-image { filter: brightness(.9); }
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
   font-size: 13px; color: var(--text-faint); transition: opacity .3s;
 }
+.game-iframe {
+  width: 100%;
+  min-height: calc(100vh - 140px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
 
 /* —— 各区收录统计柱状图 —— */
 .chart-section { margin-bottom: 28px; }

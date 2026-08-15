@@ -51,6 +51,24 @@ function renderShelf() {
   });
   shelf.appendChild(game);
 
+  // 杭州十年百万：求职卡牌策略游戏
+  const draw = document.createElement('div');
+  draw.className = 'book-card';
+  draw.setAttribute('role', 'button');
+  draw.setAttribute('tabindex', '0');
+  draw.setAttribute('aria-label', '杭州十年百万');
+  draw.innerHTML = `
+    <div class="book-title">杭州十年百万</div>
+    <div class="book-author">职场生存 · 抽卡经营</div>
+    <div class="book-intro">10年在杭赚100万，你能做到吗？</div>
+    <div class="book-tags"><span class="book-tag">策略游戏</span></div>
+  `;
+  draw.onclick = openDrawGame;
+  draw.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDrawGame(); }
+  });
+  shelf.appendChild(draw);
+
   // 末尾追加「我要分享」卡片：点击立即弹出联系我们
   const add = document.createElement('div');
   add.className = 'book-card add-card';
@@ -249,6 +267,26 @@ function openGame() {
   const origBack = document.getElementById('backShelf').onclick;
   document.getElementById('backShelf').onclick = function() { cleanup(); renderShelf(); };
 
+  window.scrollTo({ top: 0 });
+}
+
+// —— 杭州十年百万：求职卡牌策略游戏（iframe 加载） ——
+function openDrawGame() {
+  shelf.classList.remove('show');
+  reader.classList.add('show');
+  reader.innerHTML = `
+    <div class="reader-top">
+      <button class="icon-btn reader-back" id="backShelf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+        </svg>
+        书架
+      </button>
+      <span class="reader-book">杭州十年百万</span>
+    </div>
+    <iframe src="draw-game/index.html" class="game-iframe" id="drawGameFrame"></iframe>
+  `;
+  document.getElementById('backShelf').onclick = renderShelf;
   window.scrollTo({ top: 0 });
 }
 
