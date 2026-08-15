@@ -33,7 +33,8 @@ window.GameData = (function () {
     { name:'基金分红',   desc:'金钱 +2,000~6,000',     type:'money', min:2000, max:6000 },
     { name:'退税到账',   desc:'金钱 +1,000~2,500',     type:'money', min:1000, max:2500 },
     { name:'灵感迸发',   desc:'获得 2 次额外抽卡机会', type:'draws', value:2 },
-    { name:'亲友周转',   desc:'金钱 +3,000~5,000',     type:'money', min:3000, max:5000 }
+    { name:'亲友周转',   desc:'金钱 +3,000~5,000',     type:'money', min:3000, max:5000 },
+  { name:'生活节俭月', desc:'本月生活成本八折',       type:'living_discount' }
   ];
   const EVENTS_NEG = [
     { name:'公司拖欠工资', desc:'本月收入减半',           type:'income_half' },

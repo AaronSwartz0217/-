@@ -125,16 +125,10 @@ window.GameEngine = (function () {
     }
     const district = pickDistrict();
     const s = SALARY[level];
-    // 黑心公司判定（SSSR「作者」不黑心）
-    let blacklist = false;
-    let name;
-    if (level !== 'SSSR' && Math.random() < BLACK_RATE) {
-      blacklist = true;
-      name = BLACK_COMPANIES[Math.floor(Math.random() * BLACK_COMPANIES.length)];
-    } else {
-      const list = JOBS[level];
-      name = list[Math.floor(Math.random() * list.length)];
-    }
+    const list = JOBS[level];
+    const name = list[Math.floor(Math.random() * list.length)];
+    // 黑心公司判定（SSSR「作者」不黑心），名字与普通工作一致，入职后才暴露
+    const blacklist = (level !== 'SSSR' && Math.random() < BLACK_RATE);
     return {
       level: level,
       name: name,
@@ -250,7 +244,6 @@ window.GameEngine = (function () {
     const appliedPenalty = state.nextIncomePenalty;
     state.nextIncomePenalty = 0;
 
-    const expense = rent + living;
     let eventMoney = 0;
     let eventObj = null;
     let lostJobViaEvent = false;
@@ -262,11 +255,13 @@ window.GameEngine = (function () {
       state.stats.eventTriggered++;
       if (Math.random() < posRate) {
         // 正面
-        eventObj = pickWeighted(EVENTS_POS, [25, 25, 20, 20, 18, 10, 15, 12, 10]);
+        eventObj = pickWeighted(EVENTS_POS, [25, 25, 20, 20, 18, 10, 15, 12, 10, 12]);
         if (eventObj.type === 'money') {
           eventMoney = randInt(eventObj.min, eventObj.max);
         } else if (eventObj.type === 'draws') {
           state.drawChances += eventObj.value;
+        } else if (eventObj.type === 'living_discount') {
+          living = Math.round(living * 0.8);
         }
       } else {
         // 负面
@@ -279,6 +274,7 @@ window.GameEngine = (function () {
       }
     }
 
+    const expense = rent + living;
     const netIncome = income - expense + eventMoney;
     state.netWorth += netIncome;
     state.totalIncome += income;
@@ -306,6 +302,8 @@ window.GameEngine = (function () {
         resultText = '立即失去当前工作';
       } else if (eventObj.type === 'penalty') {
         resultText = '下月收入 -10%';
+      } else if (eventObj.type === 'living_discount') {
+        resultText = '本月生活费八折';
       }
       // 入事件队列（供弹窗展示）
       state.eventQueue.push({ kind: 'random', name: eventObj.name, desc: eventObj.desc, result: resultText, type: isPos ? 'pos' : 'neg' });
