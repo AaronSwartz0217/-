@@ -57,12 +57,6 @@
     <button class="btn danger" id="btnReset"><span>重新开始</span><span class="btn-sub">清空存档</span></button>
   </div>
 
-  <!-- 抽卡结果 -->
-  <div class="card draw-result" id="drawResultCard" style="display:none">
-    <div class="section-title">抽卡结果</div>
-    <div id="drawResultBody"></div>
-  </div>
-
   <!-- 事件日志 -->
   <div class="card">
     <div class="section-title">事件日志 <span class="tag" id="logTag">最近 10 条</span></div>
@@ -81,6 +75,17 @@
   <div class="foot">
     目标 1,000,000 元 · 破产线 -50,000 元 · 数据自动保存到本地浏览器<br>
     <a href="../index.html">返回主站</a>
+  </div>
+</div>
+
+<!-- 单抽弹窗 -->
+<div class="modal-mask" id="singleModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <h3>抽卡结果</h3>
+    </div>
+    <div id="singleBody"></div>
+    <div class="draw-actions" id="singleActions" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -154,6 +159,17 @@
 <div class="modal-mask" id="endModal">
   <div class="modal">
     <div id="endBody"></div>
+  </div>
+</div>
+
+<!-- 抉择事件弹窗 -->
+<div class="modal-mask" id="choiceModal">
+  <div class="modal choice-modal" style="max-width:440px">
+    <div class="modal-head">
+      <h3 id="choiceTitle">抉择</h3>
+    </div>
+    <div class="choice-desc" id="choiceDesc"></div>
+    <div class="choice-options" id="choiceOptions"></div>
   </div>
 </div>
 

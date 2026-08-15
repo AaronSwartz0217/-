@@ -139,6 +139,27 @@ window.GameEngine = (function () {
     if (state.log.length > 30) state.log.length = 30;
   }
 
+  /* ---------- 抉择效果应用 ---------- */
+  // 应用玩家选择的抉择效果，返回结果描述文本
+  function applyChoiceEffect(eff) {
+    let result = '';
+    if (eff.type === 'money') {
+      const amt = randInt(eff.min, eff.max);
+      state.netWorth += amt;
+      result = (amt >= 0 ? '+' : '') + fmt(amt) + ' 元';
+    } else if (eff.type === 'draws') {
+      state.drawChances += eff.value;
+      result = '+' + eff.value + ' 次抽卡机会';
+    } else if (eff.type === 'penalty') {
+      state.nextIncomePenalty += eff.value;
+      result = '下月收入 -' + Math.round(eff.value * 100) + '%';
+    } else if (eff.type === 'heal') {
+      state.nextIncomePenalty = 0;
+      result = '清除过劳惩罚';
+    }
+    return result;
+  }
+
   /* ---------- 录取判定 ---------- */
   // 返回 { ok, dup, rate }
   function attemptHire(card) {
@@ -304,6 +325,7 @@ window.GameEngine = (function () {
     generateCard: generateCard,
     addLog: addLog,
     attemptHire: attemptHire,
+    applyChoiceEffect: applyChoiceEffect,
     settleMonthCore: settleMonthCore
   };
 })();

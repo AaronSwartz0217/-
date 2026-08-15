@@ -49,6 +49,74 @@ window.GameData = (function () {
     { name:'迟到扣绩效',   desc:'下月收入 -10%（可叠加）', type:'penalty' }
   ];
 
+  // 抉择事件（玩家选择直接影响当月）
+  const CHOICE_EVENTS = [
+    {
+      name: '路遇扫码送礼',
+      desc: '商场门口有人拉你扫码注册，声称免费送礼品一份。',
+      options: [
+        { text: '扫码领取', effect: { type:'money', min:-800, max:300 }, hint: '可能信息泄露被盗刷' },
+        { text: '婉拒离开', effect: { type:'draws', value:1 }, hint: '路过时捡到一张求职卡' }
+      ]
+    },
+    {
+      name: '前同事拉你创业',
+      desc: '前同事邀你一起离职创业，画了个不小的饼。',
+      options: [
+        { text: '一起干一票', effect: { type:'money', min:-3000, max:6000 }, hint: '高风险高回报' },
+        { text: '稳妥拒绝', effect: { type:'heal' }, hint: '调整状态，清除过劳' }
+      ]
+    },
+    {
+      name: '项目紧急通宵',
+      desc: '项目临期，主管要你今晚通宵赶工，承诺有补贴。',
+      options: [
+        { text: '硬扛通宵', effect: { type:'money', min:1000, max:3000 }, hint: '拿到补贴但透支身体' },
+        { text: '准点下班', effect: { type:'penalty', value:0.1 }, hint: '下月绩效被打折' }
+      ]
+    },
+    {
+      name: '房东要求涨租',
+      desc: '房东短信通知下月起涨租 500，否则不再续租。',
+      options: [
+        { text: '接受涨价', effect: { type:'money', min:-500, max:-500 }, hint: '破财消灾' },
+        { text: '据理力争', effect: { type:'money', min:-1500, max:1000 }, hint: '谈判成功或被赶走' }
+      ]
+    },
+    {
+      name: '猎头高薪挖角',
+      desc: '猎头发来消息，有个薪资翻倍的岗位，但要常驻外地。',
+      options: [
+        { text: '加微信聊聊', effect: { type:'draws', value:3 }, hint: '多个机会多条路' },
+        { text: '不予理会', effect: { type:'heal' }, hint: '安心当前，清除过劳' }
+      ]
+    },
+    {
+      name: '地铁口老人求助',
+      desc: '地铁口一位老人向你借 20 元路费回家。',
+      options: [
+        { text: '掏 20 元', effect: { type:'money', min:-20, max:-20 }, hint: '小小善举' },
+        { text: '快步走开', effect: { type:'penalty', value:0.05 }, hint: '心里不是滋味，状态下滑' }
+      ]
+    },
+    {
+      name: '体检指标异常',
+      desc: '年度体检报告显示几项指标偏高，医生建议复查。',
+      options: [
+        { text: '去医院复查', effect: { type:'money', min:-2000, max:-500 }, hint: '花钱买安心' },
+        { text: '自己调理', effect: { type:'penalty', value:0.1 }, hint: '带病工作影响状态' }
+      ]
+    },
+    {
+      name: '中奖短信陷阱',
+      desc: '收到短信称你中了十万大奖，需先交手续费才能领奖。',
+      options: [
+        { text: '信了打钱', effect: { type:'money', min:-3000, max:-3000 }, hint: '明显的骗局' },
+        { text: '直接拉黑', effect: { type:'draws', value:2 }, hint: '清醒头脑，灵感涌现' }
+      ]
+    }
+  ];
+
   const GOAL = 1000000;
   const BANKRUPT = -50000;
   const TOTAL_MONTHS = 120;
@@ -73,6 +141,7 @@ window.GameData = (function () {
       nextIncomePenalty: 0,
       pendingSingle: null,
       pendingTen: null,
+      pendingChoice: null,
       log: []
     };
   }
@@ -84,6 +153,7 @@ window.GameData = (function () {
     LEVEL_NAME: LEVEL_NAME,
     EVENTS_POS: EVENTS_POS,
     EVENTS_NEG: EVENTS_NEG,
+    CHOICE_EVENTS: CHOICE_EVENTS,
     GOAL: GOAL,
     BANKRUPT: BANKRUPT,
     TOTAL_MONTHS: TOTAL_MONTHS,

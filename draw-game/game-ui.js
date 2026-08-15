@@ -7,6 +7,7 @@ window.GameUI = (function () {
   const LEVEL_NAME = D.LEVEL_NAME;
   const TOTAL_MONTHS = D.TOTAL_MONTHS;
   const GOAL = D.GOAL;
+  const BANKRUPT = D.BANKRUPT;
   const THEME_KEY = D.THEME_KEY;
 
   function $(id) { return document.getElementById(id); }
@@ -44,12 +45,13 @@ window.GameUI = (function () {
     // 按钮可用性
     const ended = state.gameOver;
     const pending = state.pendingSingle || (state.pendingTen && !state.pendingTen.resolved);
-    $('btnSingle').disabled = ended || state.drawChances < 1;
-    $('btnTen').disabled = ended || state.drawChances < 10;
-    $('btnNext').disabled = ended || !!pending;
+    const inChoice = !!state.pendingChoice;
+    $('btnSingle').disabled = ended || state.drawChances < 1 || inChoice;
+    $('btnTen').disabled = ended || state.drawChances < 10 || inChoice;
+    $('btnNext').disabled = ended || !!pending || inChoice;
 
-    // 抽卡结果
-    renderDrawResult();
+    // 抽卡结果弹窗（存在未处理单抽结果时弹出）
+    if (state.pendingSingle) openSingleModal(); else closeSingleModal();
 
     // 图鉴计数
     const collected = state.collection.R.length + state.collection.SR.length + state.collection.SSR.length + state.collection.SSSR.length;
@@ -58,6 +60,9 @@ window.GameUI = (function () {
 
     // 日志
     renderLog();
+
+    // 抉择事件弹窗（存在未完成抉择时自动弹出）
+    if (state.pendingChoice) openChoiceModal();
   }
 
   function renderJob() {
@@ -92,28 +97,24 @@ window.GameUI = (function () {
     $('btnResign').onclick = resignJob;
   }
 
-  function renderDrawResult() {
+  /* ---------- 单抽弹窗 ---------- */
+  function openSingleModal() { renderSingleModal(); $('singleModal').classList.add('show'); }
+  function closeSingleModal() { $('singleModal').classList.remove('show'); }
+
+  function renderSingleModal() {
     const state = E.state;
-    const card = $('drawResultCard');
-    const body = $('drawResultBody');
-    if (state.pendingSingle) {
-      card.style.display = '';
-      body.innerHTML = renderBigCard(state.pendingSingle) +
-        '<div class="draw-actions" style="margin-top:14px">' +
-        (state.pendingSingle.isN
-          ? '<button class="btn" id="drDismiss"><span>关闭</span></button>'
-          : '<button class="btn primary" id="drAccept"><span>录取</span></button>' +
-            '<button class="btn" id="drDecline"><span>放弃</span></button>') +
-        '</div>';
-      if (state.pendingSingle.isN) {
-        $('drDismiss').onclick = () => { state.pendingSingle = null; E.saveState(); render(); };
-      } else {
-        $('drAccept').onclick = acceptSingle;
-        $('drDecline').onclick = declineSingle;
-      }
+    const card = state.pendingSingle;
+    const body = $('singleBody');
+    const actions = $('singleActions');
+    if (!card) { closeSingleModal(); return; }
+    body.innerHTML = renderBigCard(card);
+    if (card.isN) {
+      actions.innerHTML = '<button class="btn" id="drDismiss"><span>知道了</span></button>';
+      $('drDismiss').onclick = () => { state.pendingSingle = null; E.saveState(); closeSingleModal(); render(); };
     } else {
-      card.style.display = 'none';
-      body.innerHTML = '';
+      actions.innerHTML = '<button class="btn primary" id="drAccept"><span>录取</span></button><button class="btn" id="drDecline"><span>放弃</span></button>';
+      $('drAccept').onclick = acceptSingle;
+      $('drDecline').onclick = declineSingle;
     }
   }
 
@@ -134,7 +135,7 @@ window.GameUI = (function () {
     }
     const rate = E.hireRate(card.level, card.districtHire);
     return (
-      '<div class="big-card">' +
+      '<div class="big-card bc-' + card.level + '">' +
         '<div class="lvl-strip" style="background:var(--level-' + card.level + ')"></div>' +
         '<div class="row-top">' +
           '<span class="lvl lvl-' + card.level + '">' + card.level + ' · ' + LEVEL_NAME[card.level] + '</span>' +
@@ -161,6 +162,75 @@ window.GameUI = (function () {
     ).join('');
   }
 
+  /* ---------- 抉择事件 ---------- */
+  // 在抽卡/跳过本月前判定是否触发抉择，触发则暂停等待玩家选择
+  function maybeTriggerChoice(action) {
+    const state = E.state;
+    if (state.pendingChoice) { openChoiceModal(); return true; }
+    if (Math.random() < 0.15) {
+      const events = D.CHOICE_EVENTS;
+      const ev = events[Math.floor(Math.random() * events.length)];
+      state.pendingChoice = { event: ev, action: action };
+      E.addLog('触发抉择：' + ev.name, 'sys');
+      E.saveState();
+      render();
+      return true;
+    }
+    return false;
+  }
+
+  function resolveChoice(idx) {
+    const state = E.state;
+    const pc = state.pendingChoice;
+    if (!pc) return;
+    const opt = pc.event.options[idx];
+    if (!opt) return;
+    const eff = opt.effect;
+    const resultText = E.applyChoiceEffect(eff);
+    const isNeg = (eff.type === 'money' && eff.min < 0) || eff.type === 'penalty';
+    E.addLog('抉择【' + pc.event.name + '】' + opt.text + '：' + resultText, isNeg ? 'neg' : 'pos');
+    toast(opt.text + '：' + resultText);
+    const action = pc.action;
+    state.pendingChoice = null;
+    closeChoiceModal();
+    E.saveState();
+    render();
+    // 抉择可能直接导致胜负
+    if (state.netWorth >= GOAL || state.netWorth < BANKRUPT) {
+      state.gameOver = true;
+      state.gameResult = state.netWorth >= GOAL ? 'win' : 'bankrupt';
+      E.addLog(state.gameResult === 'win' ? '净资产突破 100 万，胜利！' : '净资产跌破破产线，游戏结束', state.gameResult === 'win' ? 'pos' : 'neg');
+      E.saveState();
+      render();
+      openEndModal();
+      return;
+    }
+    if (action === 'single') singleDrawProceed();
+    else if (action === 'ten') tenDrawProceed();
+    else settleMonthProceed();
+  }
+
+  function openChoiceModal() { renderChoiceModal(); $('choiceModal').classList.add('show'); }
+  function closeChoiceModal() { $('choiceModal').classList.remove('show'); }
+
+  function renderChoiceModal() {
+    const state = E.state;
+    const pc = state.pendingChoice;
+    if (!pc) { closeChoiceModal(); return; }
+    $('choiceTitle').textContent = '抉择 · ' + pc.event.name;
+    $('choiceDesc').textContent = pc.event.desc;
+    const opts = pc.event.options;
+    $('choiceOptions').innerHTML = opts.map((o, i) =>
+      '<button class="choice-opt" data-i="' + i + '">' +
+        '<div class="co-text">' + escapeHtml(o.text) + '</div>' +
+        '<div class="co-hint">' + escapeHtml(o.hint) + '</div>' +
+      '</button>'
+    ).join('');
+    $('choiceOptions').querySelectorAll('.choice-opt').forEach(el => {
+      el.onclick = () => resolveChoice(parseInt(el.dataset.i, 10));
+    });
+  }
+
   /* ---------- 抽卡交互（含自动过月） ---------- */
 
   // 单抽：先生成卡牌前自动触发一次月结算
@@ -168,15 +238,19 @@ window.GameUI = (function () {
     const state = E.state;
     if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     if (state.drawChances < 1) { toast('抽卡次数不足'); return; }
+    if (maybeTriggerChoice('single')) return;
+    singleDrawProceed();
+  }
 
+  function singleDrawProceed() {
+    const state = E.state;
+    if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     // 自动月结算（十连抽只触发一次，单抽触发一次）
     const result = E.settleMonthCore();
     render();
     if (result.gameOver) { openEndModal(); return; }
-
     // 结算可能改变了抽卡次数，再次校验
     if (state.drawChances < 1) { toast('抽卡次数不足'); return; }
-
     state.drawChances -= 1;
     state.totalDraws += 1;
     state.pendingSingle = E.generateCard();
@@ -224,14 +298,18 @@ window.GameUI = (function () {
     const state = E.state;
     if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     if (state.drawChances < 10) { toast('需要 10 次抽卡机会'); return; }
+    if (maybeTriggerChoice('ten')) return;
+    tenDrawProceed();
+  }
 
+  function tenDrawProceed() {
+    const state = E.state;
+    if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     // 自动月结算（只触发一次）
     const result = E.settleMonthCore();
     render();
     if (result.gameOver) { openEndModal(); return; }
-
     if (state.drawChances < 10) { toast('需要 10 次抽卡机会'); return; }
-
     state.drawChances -= 10;
     state.totalDraws += 10;
     const cards = [];
@@ -300,6 +378,13 @@ window.GameUI = (function () {
       toast('请先处理当前抽卡结果');
       return;
     }
+    if (maybeTriggerChoice('skip')) return;
+    settleMonthProceed();
+  }
+
+  function settleMonthProceed() {
+    const state = E.state;
+    if (state.gameOver) { toast('游戏已结束，请重新开始'); return; }
     E.settleMonthCore();
     render();
     if (state.gameOver) openEndModal();
