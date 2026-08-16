@@ -225,19 +225,25 @@ window.GameEngine = (function () {
     let income = 0;
     let district;
     let rent = 0, living = 0;
+    let killLine = false;
 
     if (state.currentJob) {
       district = findDistrict(state.currentJob.district);
       const raw = randFloat(state.currentJob.salaryMin, state.currentJob.salaryMax);
       income = raw * (1 - state.nextIncomePenalty);
       rent = randFloat(district.rentMin, district.rentMax);
-      living = district.living;
+      living = Math.round(district.living * state.livingDiscount);
+      // 斩杀线：工作收入无法平衡开销时，生活费升至 3500
+      if (income < rent + living) {
+        living = 3500;
+        killLine = true;
+      }
       state.stats.monthsWorked++;
     } else {
       // 无工作：随机分配区域
       district = pickDistrict();
       rent = randFloat(district.rentMin, district.rentMax);
-      living = district.living;
+      living = Math.round(district.living * state.livingDiscount);
     }
 
     // 应用本月过劳惩罚后重置（下月重新累计）
@@ -260,8 +266,8 @@ window.GameEngine = (function () {
           eventMoney = randInt(eventObj.min, eventObj.max);
         } else if (eventObj.type === 'draws') {
           state.drawChances += eventObj.value;
-        } else if (eventObj.type === 'living_discount') {
-          living = Math.round(living * 0.8);
+        } else if (eventObj.type === 'living_buff') {
+          state.livingDiscount = Math.max(0.5, Math.round(state.livingDiscount * 0.8 * 100) / 100);
         }
       } else {
         // 负面
@@ -283,6 +289,7 @@ window.GameEngine = (function () {
     let logType = 'sys';
     let logText = '第 ' + state.currentMonth + ' 月结算：收入 ' + fmt(income) + ' - 支出 ' + fmt(expense);
     if (appliedPenalty > 0) logText += '（过劳 -' + Math.round(appliedPenalty * 100) + '%）';
+    if (killLine) logText += '（斩杀线：生活费升至3500）';
     logText += ' = 净 ' + (netIncome >= 0 ? '+' : '') + fmt(netIncome);
     addLog(logText, logType);
 
@@ -302,8 +309,8 @@ window.GameEngine = (function () {
         resultText = '立即失去当前工作';
       } else if (eventObj.type === 'penalty') {
         resultText = '下月收入 -10%';
-      } else if (eventObj.type === 'living_discount') {
-        resultText = '本月生活费八折';
+      } else if (eventObj.type === 'living_buff') {
+        resultText = '永久生活成本 -20%（当前倍率 ' + Math.round(state.livingDiscount*100) + '%）';
       }
       // 入事件队列（供弹窗展示）
       state.eventQueue.push({ kind: 'random', name: eventObj.name, desc: eventObj.desc, result: resultText, type: isPos ? 'pos' : 'neg' });

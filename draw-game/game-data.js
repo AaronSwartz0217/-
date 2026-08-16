@@ -10,14 +10,14 @@ window.GameData = (function () {
   };
 
   const DISTRICTS = [
-    { name:'余杭区', jobs:25, hire:75,  quit:12.5, rentMin:1800, rentMax:3000, living:2500 },
-    { name:'西湖区', jobs:21, hire:79,  quit:10.5, rentMin:1800, rentMax:3000, living:3000 },
-    { name:'滨江区', jobs:20, hire:80,  quit:10.0, rentMin:2500, rentMax:4000, living:3500 },
-    { name:'上城区', jobs:19, hire:81,  quit:9.5,  rentMin:2000, rentMax:3300, living:3000 },
-    { name:'萧山区', jobs:19, hire:81,  quit:9.5,  rentMin:2200, rentMax:3500, living:2500 },
-    { name:'拱墅区', jobs:12, hire:88,  quit:6.0,  rentMin:1800, rentMax:2700, living:2800 },
-    { name:'临平区', jobs:7,  hire:93,  quit:3.5,  rentMin:1000, rentMax:2000, living:2000 },
-    { name:'钱塘区', jobs:4,  hire:96,  quit:2.0,  rentMin:1500, rentMax:2500, living:2200 }
+    { name:'余杭区', jobs:25, hire:75,  quit:12.5, rentMin:1800, rentMax:3000, living:1500 },
+    { name:'西湖区', jobs:21, hire:79,  quit:10.5, rentMin:1800, rentMax:3000, living:2000 },
+    { name:'滨江区', jobs:20, hire:80,  quit:10.0, rentMin:2500, rentMax:4000, living:2500 },
+    { name:'上城区', jobs:19, hire:81,  quit:9.5,  rentMin:2000, rentMax:3300, living:2000 },
+    { name:'萧山区', jobs:19, hire:81,  quit:9.5,  rentMin:2200, rentMax:3500, living:1500 },
+    { name:'拱墅区', jobs:12, hire:88,  quit:6.0,  rentMin:1800, rentMax:2700, living:1800 },
+    { name:'临平区', jobs:7,  hire:93,  quit:3.5,  rentMin:1000, rentMax:2000, living:1000 },
+    { name:'钱塘区', jobs:4,  hire:96,  quit:2.0,  rentMin:1500, rentMax:2500, living:1200 }
   ];
 
   const SALARY = { R:[2000,6000], SR:[6000,10000], SSR:[10000,20000], SSSR:[100000,100000] };
@@ -34,7 +34,7 @@ window.GameData = (function () {
     { name:'退税到账',   desc:'金钱 +1,000~2,500',     type:'money', min:1000, max:2500 },
     { name:'灵感迸发',   desc:'获得 2 次额外抽卡机会', type:'draws', value:2 },
     { name:'亲友周转',   desc:'金钱 +3,000~5,000',     type:'money', min:3000, max:5000 },
-  { name:'生活节俭月', desc:'本月生活成本八折',       type:'living_discount' }
+  { name:'生活节俭月', desc:'永久生活成本 -20%（长期buff）', type:'living_buff' }
   ];
   const EVENTS_NEG = [
     { name:'公司拖欠工资', desc:'本月收入减半',           type:'income_half' },
@@ -144,6 +144,7 @@ window.GameData = (function () {
       gameResult: null,
       settings: { hzBoost: true },
       nextIncomePenalty: 0,
+      livingDiscount: 1.0,
       pendingSingle: null,
       pendingTen: null,
       eventQueue: [],
