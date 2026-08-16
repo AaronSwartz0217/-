@@ -270,24 +270,9 @@ function openGame() {
   window.scrollTo({ top: 0 });
 }
 
-// —— 杭州十年百万：求职卡牌策略游戏（iframe 加载） ——
+// —— 杭州十年百万：直接跳转独立游戏页（不再 iframe 嵌套） ——
 function openDrawGame() {
-  shelf.classList.remove('show');
-  reader.classList.add('show');
-  reader.innerHTML = `
-    <div class="reader-top">
-      <button class="icon-btn reader-back" id="backShelf">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
-        </svg>
-        书架
-      </button>
-      <span class="reader-book">杭州十年百万</span>
-    </div>
-    <iframe src="draw-game/index.html" class="game-iframe" id="drawGameFrame"></iframe>
-  `;
-  document.getElementById('backShelf').onclick = renderShelf;
-  window.scrollTo({ top: 0 });
+  window.location.href = 'draw-game/index.html';
 }
 
 renderShelf();
